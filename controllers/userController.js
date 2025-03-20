@@ -11,22 +11,37 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ success: false, message: "Please provide email and password" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Please provide email and password" });
   }
 
   const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(401).json({ success: false, message: "Invalid email or password" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid email or password" });
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    return res.status(401).json({ success: false, message: "Invalid email or password" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid email or password" });
   }
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-  
+  const token = jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      lastname: user.lastname,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+
   res.status(200).json({
     success: true,
     message: "Login successful",
@@ -54,12 +69,16 @@ const getusers = asyncHandler(async (req, res) => {
 const createuser = asyncHandler(async (req, res) => {
   const { name, lastname, email, password } = req.body;
   if (!name || !lastname || !email || !password) {
-    return res.status(400).json({ success: false, message: "Please provide all required fields" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Please provide all required fields" });
   }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res.status(400).json({ success: false, message: "Email already exists" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email already exists" });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -96,7 +115,9 @@ const updateuser = asyncHandler(async (req, res) => {
     req.body.password = await bcrypt.hash(req.body.password, 10);
   }
 
-  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
   res.status(200).json(updatedUser);
 });
 
@@ -156,7 +177,9 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    return res.status(400).json({ success: false, message: "Invalid or expired reset code" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired reset code" });
   }
 
   user.password = await bcrypt.hash(newPassword, 10);
@@ -167,4 +190,13 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Password reset successful" });
 });
 
-module.exports = { getusers, createuser, getuser, updateuser, deleteuser, forgotPassword, resetPassword, loginUser };
+module.exports = {
+  getusers,
+  createuser,
+  getuser,
+  updateuser,
+  deleteuser,
+  forgotPassword,
+  resetPassword,
+  loginUser,
+};
