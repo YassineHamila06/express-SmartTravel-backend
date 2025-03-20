@@ -4,6 +4,42 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
+//@desc: Login user
+//@route: POST /api/v1/users/login
+//@access: Public
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: "Please provide email and password" });
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(401).json({ success: false, message: "Invalid email or password" });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    return res.status(401).json({ success: false, message: "Invalid email or password" });
+  }
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  
+  res.status(200).json({
+    success: true,
+    message: "Login successful",
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      lastname: user.lastname,
+      email: user.email,
+    },
+  });
+});
+
 //@desc: Get all users
 //@route: GET /api/v1/users
 //@access: Public
@@ -55,11 +91,11 @@ const updateuser = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
-  
+
   if (req.body.password) {
     req.body.password = await bcrypt.hash(req.body.password, 10);
   }
-  
+
   const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
   res.status(200).json(updatedUser);
 });
@@ -84,16 +120,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: "User not found" });
   }
 
-  const resetCode = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit code
-  console.log("Generated reset code:", resetCode);
+  const resetCode = Math.floor(100000 + Math.random() * 900000);
 
   user.resetPasswordCode = resetCode;
-  user.resetPasswordCodeExpires = new Date(Date.now() + 900000); // 15 minutes expiry
+  user.resetPasswordCodeExpires = new Date(Date.now() + 900000);
   await user.markModified("resetPasswordCode");
   await user.markModified("resetPasswordCodeExpires");
   await user.save();
-
-  console.log("Reset code saved for:", user.email);
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -116,20 +149,16 @@ const forgotPassword = asyncHandler(async (req, res) => {
 // Reset Password Function
 const resetPassword = asyncHandler(async (req, res) => {
   const { resetCode, newPassword } = req.body;
-  
-  console.log("Received resetCode:", resetCode);
 
   const user = await User.findOne({
-    resetPasswordCode: Number(resetCode), // Ensure resetCode is compared as a number
-    resetPasswordCodeExpires: { $gt: new Date() }, // Check if it hasn't expired
+    resetPasswordCode: Number(resetCode),
+    resetPasswordCodeExpires: { $gt: new Date() },
   });
-
-  console.log("User found for reset:", user);
 
   if (!user) {
     return res.status(400).json({ success: false, message: "Invalid or expired reset code" });
   }
-  
+
   user.password = await bcrypt.hash(newPassword, 10);
   user.resetPasswordCode = undefined;
   user.resetPasswordCodeExpires = undefined;
@@ -138,4 +167,4 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Password reset successful" });
 });
 
-module.exports = { getusers, createuser, getuser, updateuser, deleteuser, forgotPassword, resetPassword };
+module.exports = { getusers, createuser, getuser, updateuser, deleteuser, forgotPassword, resetPassword, loginUser };
