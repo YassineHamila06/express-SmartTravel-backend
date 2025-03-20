@@ -190,6 +190,20 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Password reset successful" });
 });
 
+// Get logged-in user data
+const getMe = asyncHandler(async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "User not found" });
+  }
+
+  res.status(200).json({
+    id: req.user.id,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    email: req.user.email,
+  });
+});
+
 module.exports = {
   getusers,
   createuser,
@@ -199,4 +213,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   loginUser,
+  getMe,
 };
