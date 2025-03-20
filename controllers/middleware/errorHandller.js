@@ -1,42 +1,33 @@
-const {constants} = require("../../constants");
-const errorHandller = (err, req, res, next) => {
-  const statusCode = res.statusCode ? res.statusCode : 500;
+const { constants } = require("../../constants");
+
+const errorHandler = (err, req, res, next) => {
+  const statusCode = res.statusCode && Object.values(constants).includes(res.statusCode)
+    ? res.statusCode
+    : constants.SERVER_ERROR;
+
+  res.status(statusCode).json({
+    title: getErrorTitle(statusCode),
+    message: err.message,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+};
+
+// Function to map error status codes to titles
+const getErrorTitle = (statusCode) => {
   switch (statusCode) {
     case constants.VALIDATION_ERROR:
-      res.json({
-        title: "validation Failed",
-        message: err.message,
-        stackTrace: err.stack,
-      });
-      break;
+      return "Validation Failed";
     case constants.NOT_FOUND:
-      res.json({
-        title: "NOT FOUND",
-        message: err.message,
-        stackTrace: err.stack,
-      });
-      case constants.UNAUTHORIZED:
-      res.json({
-        title: "Unauthorized",
-        message: err.message,
-        stackTrace: err.stack,
-      });
-      case constants.FORBIDDEN:
-      res.json({
-        title: "Forbidden",
-        message: err.message,
-        stackTrace: err.stack,
-      });
-      case constants.SERVER_ERROR:
-      res.json({
-        title: "Server Error",
-        message: err.message,
-        stackTrace: err.stack,
-      });
+      return "Not Found";
+    case constants.UNAUTHORIZED:
+      return "Unauthorized";
+    case constants.FORBIDDEN:
+      return "Forbidden";
+    case constants.SERVER_ERROR:
+      return "Server Error";
     default:
-      console.log("No error found");
-      break;
+      return "Error";
   }
 };
 
-module.exports = errorHandller;
+module.exports = errorHandler;

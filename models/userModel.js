@@ -19,8 +19,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide a password"],
     },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
+    resetPasswordCode: String, // Updated from resetPasswordToken
+    resetPasswordCodeExpires: Date, // Updated from resetPasswordExpires
   },
   { timestamps: true }
 );

@@ -2,7 +2,6 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
 //@desc: Get all users
@@ -17,20 +16,22 @@ const getusers = asyncHandler(async (req, res) => {
 //@route: POST /api/v1/users
 //@access: Public
 const createuser = asyncHandler(async (req, res) => {
-  console.log("the request body is :", req.body);
   const { name, lastname, email, password } = req.body;
   if (!name || !lastname || !email || !password) {
-    res.status(400).json({
-      success: false,
-      message: "Please provide all the required fields",
-    });
+    return res.status(400).json({ success: false, message: "Please provide all required fields" });
   }
 
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ success: false, message: "Email already exists" });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
   const user = await User.create({
     name,
     lastname,
     email,
-    password,
+    password: hashedPassword,
   });
   res.status(201).json(user);
 });
@@ -41,10 +42,7 @@ const createuser = asyncHandler(async (req, res) => {
 const getuser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
-    res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
+    return res.status(404).json({ success: false, message: "User not found" });
   }
   res.status(200).json(user);
 });
@@ -55,14 +53,14 @@ const getuser = asyncHandler(async (req, res) => {
 const updateuser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
-    res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
+    return res.status(404).json({ success: false, message: "User not found" });
   }
-  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
+  
+  if (req.body.password) {
+    req.body.password = await bcrypt.hash(req.body.password, 10);
+  }
+  
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
   res.status(200).json(updatedUser);
 });
 
@@ -72,17 +70,10 @@ const updateuser = asyncHandler(async (req, res) => {
 const deleteuser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
+    return res.status(404).json({ success: false, message: "User not found" });
   }
-
   await User.findByIdAndDelete(req.params.id);
-  res.status(200).json({
-    success: true,
-    message: "User deleted successfully",
-  });
+  res.status(200).json({ success: true, message: "User deleted successfully" });
 });
 
 // Forgot Password Function
@@ -93,21 +84,16 @@ const forgotPassword = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: "User not found" });
   }
 
-  // Generate a 6-digit reset code
-  const resetCode = Math.floor(100000 + Math.random() * 900000); // 6-digit code
+  const resetCode = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit code
+  console.log("Generated reset code:", resetCode);
 
-  // Save the code and expiration time in the user model
   user.resetPasswordCode = resetCode;
-  user.resetPasswordCodeExpires = Date.now() + 900000; // 15-minute expiry
+  user.resetPasswordCodeExpires = new Date(Date.now() + 900000); // 15 minutes expiry
+  await user.markModified("resetPasswordCode");
+  await user.markModified("resetPasswordCodeExpires");
   await user.save();
 
-  // Send the reset code via email
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: user.email,
-    subject: "Password Reset Request",
-    text: `You requested a password reset. Your reset code is: ${resetCode}`,
-  };
+  console.log("Reset code saved for:", user.email);
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -117,27 +103,38 @@ const forgotPassword = asyncHandler(async (req, res) => {
     },
   });
 
-  await transporter.sendMail(mailOptions);
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: user.email,
+    subject: "Password Reset Request",
+    text: `Your password reset code is: ${resetCode}`,
+  });
+
   res.json({ success: true, message: "Password reset code sent" });
 });
 
 // Reset Password Function
 const resetPassword = asyncHandler(async (req, res) => {
   const { resetCode, newPassword } = req.body;
+  
+  console.log("Received resetCode:", resetCode);
+
   const user = await User.findOne({
-    resetPasswordCode: resetCode,
-    resetPasswordCodeExpires: { $gt: Date.now() }, // Ensure the code is not expired
+    resetPasswordCode: Number(resetCode), // Ensure resetCode is compared as a number
+    resetPasswordCodeExpires: { $gt: new Date() }, // Check if it hasn't expired
   });
+
+  console.log("User found for reset:", user);
 
   if (!user) {
     return res.status(400).json({ success: false, message: "Invalid or expired reset code" });
   }
-
-  // Hash the new password
+  
   user.password = await bcrypt.hash(newPassword, 10);
   user.resetPasswordCode = undefined;
   user.resetPasswordCodeExpires = undefined;
   await user.save();
+
   res.json({ success: true, message: "Password reset successful" });
 });
 
