@@ -12,15 +12,13 @@ const {
 
 //const validateToken = require("../controllers/middleware/validateTokenhandller");
 
-
 // Use Multer only for create (you can add for update too)
 router.post("/", upload.single("image"), createTrip);
 router.put("/:id", upload.single("image"), updateTrip);
 
-
-router.get("/",getTrips);
-router.get("/:id",getTrip);
-router.delete("/:id",deleteTrip);
+router.get("/", getTrips);
+router.get("/:id", getTrip);
+router.delete("/:id", deleteTrip);
 
 router.route("/:id/activate").patch(activateTrip); // Admin: Activate trip
 
