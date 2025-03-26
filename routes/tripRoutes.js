@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../controllers/middleware/uploadMiddleware");
+const { uploadTripImage } = require("../controllers/middleware/uploadMiddleware"); // Import the correct upload middleware
 const {
   createTrip,
   getTrips,
@@ -10,16 +10,16 @@ const {
   activateTrip,
 } = require("../controllers/tripController");
 
-//const validateToken = require("../controllers/middleware/validateTokenhandller");
+// Use Multer only for create and update (optional image upload)
+router.post("/add", uploadTripImage.single("image"), createTrip); // Handles image upload for trip creation
+router.put("/update/:id", uploadTripImage.single("image"), updateTrip); // Handles image upload for trip update
 
-// Use Multer only for create (you can add for update too)
-router.post("/", upload.single("image"), createTrip);
-router.put("/:id", upload.single("image"), updateTrip);
+// Routes for fetching and deleting trips (no image upload required here)
+router.get("/get", getTrips);
+router.get("/get/:id", getTrip);
+router.delete("/delete/:id", deleteTrip);
 
-router.get("/", getTrips);
-router.get("/:id", getTrip);
-router.delete("/:id", deleteTrip);
-
+// Route for activating a trip (no image upload here)
 router.route("/:id/activate").patch(activateTrip); // Admin: Activate trip
 
 module.exports = router;

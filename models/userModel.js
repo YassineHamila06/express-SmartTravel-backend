@@ -19,8 +19,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide a password"],
     },
-    resetPasswordCode: String, // Updated from resetPasswordToken
-    resetPasswordCodeExpires: Date, // Updated from resetPasswordExpires
+    profileImage: {
+      type: String, // Store the image URL or path
+      required: false, // The profile image is optional
+    },
+    resetPasswordCode: String, 
+    resetPasswordCodeExpires: Date, 
   },
   { timestamps: true }
 );

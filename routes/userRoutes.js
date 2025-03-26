@@ -13,14 +13,18 @@ const {
 } = require("../controllers/userController");
 
 const validateToken = require("../controllers/middleware/validateTokenhandller");
+const { uploadProfileImage } = require("../controllers/middleware/uploadMiddleware"); // Import the correct upload middleware
 
 // ✅ Fix: Define /me route BEFORE /:id
 router.get("/me", validateToken, getMe); // Fetches logged-in user's info
-router.get("/", getusers); // Gets all users
-router.post("/", createuser); // Creates a new user
-router.get("/:id", getuser); // Gets a single user by id
-router.put("/:id", updateuser); // Updates a user by id
-router.delete("/:id", deleteuser); // Deletes a user by id
+router.get("/get", getusers); // Gets all users
+router.post("/add", createuser); // Creates a new user
+router.get("/get/:id", getuser); // Gets a single user by id
+
+// Update user route with optional profile image upload
+router.put("/update/:id", uploadProfileImage.single("profileImage"), updateuser); // Use the correct middleware for profile image upload
+
+router.delete("/delete/:id", deleteuser); // Deletes a user by id
 
 // Define routes for authentication
 router.post("/login", loginUser);
