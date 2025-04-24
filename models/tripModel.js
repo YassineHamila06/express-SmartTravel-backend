@@ -6,6 +6,10 @@ const tripSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide a destination"],
     },
+    description: {
+      type: String,
+      required: [true, "Please provide a description"],
+    },
     price: {
       type: String,
       required: [true, "Please provide a price"],
@@ -24,11 +28,10 @@ const tripSchema = new mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model("Trip", tripSchema);
-

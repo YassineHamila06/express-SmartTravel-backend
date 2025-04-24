@@ -12,17 +12,23 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ success: false, message: "Please provide email and password" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Please provide email and password" });
   }
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(401).json({ success: false, message: "Invalid email or password" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid email or password" });
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    return res.status(401).json({ success: false, message: "Invalid email or password" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid email or password" });
   }
 
   const token = jwt.sign(
@@ -64,12 +70,16 @@ const getusers = asyncHandler(async (req, res) => {
 const createuser = asyncHandler(async (req, res) => {
   const { name, lastname, email, password } = req.body;
   if (!name || !lastname || !email || !password) {
-    return res.status(400).json({ success: false, message: "Please provide all required fields" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Please provide all required fields" });
   }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res.status(400).json({ success: false, message: "Email already exists" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email already exists" });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -78,6 +88,7 @@ const createuser = asyncHandler(async (req, res) => {
     lastname,
     email,
     password: hashedPassword,
+    profileImage: null,
   });
 
   res.status(201).json(user);
@@ -103,18 +114,19 @@ const updateuser = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
-  // If profile image is provided, upload it to Cloudinary
-  if (req.file && req.file.path) {
-    const result = await cloudinary.uploader.upload(req.file.path, { folder: "users" });
-    req.body.profileImage = result.secure_url; // Save the Cloudinary image URL
+  if (req.file) {
+    req.body.profileImage = req.file.path;
+    // If you use multer-storage-cloudinary, req.file.path IS the Cloudinary URL already.
   }
 
-  // If password is provided, hash it
   if (req.body.password) {
     req.body.password = await bcrypt.hash(req.body.password, 10);
   }
 
-  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+
   res.status(200).json(updatedUser);
 });
 
@@ -174,7 +186,9 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    return res.status(400).json({ success: false, message: "Invalid or expired reset code" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired reset code" });
   }
 
   user.password = await bcrypt.hash(newPassword, 10);

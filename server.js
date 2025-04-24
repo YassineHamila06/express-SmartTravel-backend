@@ -16,6 +16,7 @@ app.use(express.json());
 app.use("/admin",require("./routes/adminRoutes"));
 app.use("/user", require("./routes/userRoutes"));
 app.use("/trip", require("./routes/tripRoutes"));
+app.use("/reservation", require("./routes/reservationRoutes"));
 app.use(errorHandler);
 
 app.listen(port, () => {
