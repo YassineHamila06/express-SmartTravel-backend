@@ -25,6 +25,21 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordCode: String, 
     resetPasswordCodeExpires: Date, 
+    travelPreferences: {
+      type: [String],
+      enum: [
+        "Beach destinations",
+        "Cultural tours",
+        "Adventure travel",
+        "Nature escapes",
+        "City breaks",
+        "Luxury travel",
+        "Budget travel",
+        "Wellness retreats",
+        "Family vacations",
+      ],
+      default: [],
+    },
   },
   { timestamps: true }
 );

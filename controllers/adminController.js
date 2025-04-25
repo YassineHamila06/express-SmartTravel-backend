@@ -139,6 +139,7 @@ const deleteAdmin = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: "Admin deleted successfully" });
 });
 
+
 module.exports = {
   loginAdmin,
   getAdmins,

@@ -38,7 +38,8 @@ const reservationSchema = new mongoose.Schema(
             enum: ["konnect", "paypal", "bank_transfer", "credit_card", "cash", "other"],
             default: "credit_card",
         },
-    }
+    },
+    { timestamps: true }
 );
 
 const Reservation = mongoose.model("Reservation", reservationSchema);

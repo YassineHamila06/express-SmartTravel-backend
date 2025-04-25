@@ -30,6 +30,21 @@ const tripSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    tripType: {
+      type: String,
+      enum: [
+        "Beach destination",
+        "Cultural tour",
+        "Adventure travel",
+        "Nature escape",
+        "City break",
+        "Luxury travel",
+        "Budget travel",
+        "Wellness retreat",
+        "Family vacation",
+      ],
+      required: [true, "Please provide a trip type"],
+    },
   },
   { timestamps: true }
 );

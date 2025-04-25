@@ -110,25 +110,59 @@ const getuser = asyncHandler(async (req, res) => {
 // @access: Public
 const updateuser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
+
   if (!user) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
+  // Handle profile image update if a file is uploaded
   if (req.file) {
     req.body.profileImage = req.file.path;
-    // If you use multer-storage-cloudinary, req.file.path IS the Cloudinary URL already.
   }
 
+  // Hash password if it's being updated
   if (req.body.password) {
     req.body.password = await bcrypt.hash(req.body.password, 10);
   }
 
+  // If travelPreferences is provided, validate that it's an array of allowed values
+  const allowedPreferences = [
+    "Beach destinations",
+    "Cultural tours",
+    "Adventure travel",
+    "Nature escapes",
+    "City breaks",
+    "Luxury travel",
+    "Budget travel",
+    "Wellness retreats",
+    "Family vacations",
+  ];
+
+  if (req.body.travelPreferences) {
+    if (!Array.isArray(req.body.travelPreferences)) {
+      return res.status(400).json({ success: false, message: "travelPreferences must be an array" });
+    }
+
+    const isValid = req.body.travelPreferences.every(pref =>
+      allowedPreferences.includes(pref)
+    );
+
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid value in travelPreferences",
+      });
+    }
+  }
+
   const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
+    runValidators: true,
   });
 
   res.status(200).json(updatedUser);
 });
+
 
 // @desc: Delete user
 // @route: DELETE /api/v1/users/:id
