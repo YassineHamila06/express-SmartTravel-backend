@@ -12,9 +12,6 @@ const {
     getReservationsByStatus,
     getReservationsByDateRange,
 } = require("../controllers/reservationcontroller");
-const user = require("../controllers/userController");
-const trip = require("../controllers/tripController");
-
 router.post("/add", createReservation);
 router.get("/get", getReservations);
 router.delete("/delete/:id", deleteReservation);
