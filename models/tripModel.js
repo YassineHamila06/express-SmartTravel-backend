@@ -29,6 +29,7 @@ const tripSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+      required: [false],
     },
     tripType: {
       type: String,
@@ -43,7 +44,12 @@ const tripSchema = new mongoose.Schema(
         "Wellness retreat",
         "Family vacation",
       ],
-      required: [true, "Please provide a trip type"],
+      required: [false, "Please provide a trip type"],
+    },
+    reduction: {
+      type: Number,
+      default: 0,
+      required: [false],
     },
   },
   { timestamps: true }

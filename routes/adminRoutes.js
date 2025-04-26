@@ -8,6 +8,8 @@ const {
   createAdmin,
   updateAdmin,
   deleteAdmin,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/adminController");
 
 
@@ -17,5 +19,6 @@ router.get("/get/:id", getAdmin);
 router.post("/add", uploadProfileImage.single("profileImage"), createAdmin);
 router.put("/update/:id", uploadProfileImage.single("profileImage"), updateAdmin);
 router.delete("/delete/:id", deleteAdmin);
-
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 module.exports = router;

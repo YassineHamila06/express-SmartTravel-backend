@@ -3,6 +3,7 @@ const Admin = require("../models/adminModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cloudinary = require("../config/cloudinary");
+const nodemailer = require("nodemailer");
 
 // @desc    Admin login
 // @route   POST /api/v1/admins/login
@@ -138,7 +139,60 @@ const deleteAdmin = asyncHandler(async (req, res) => {
   await Admin.findByIdAndDelete(req.params.id);
   res.status(200).json({ success: true, message: "Admin deleted successfully" });
 });
+// Forgot Password Function
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const admin = await Admin.findOne({ email });
+  if (!admin) {
+    return res.status(400).json({ success: false, message: "Admin not found" });
+  }
+  
+  const resetCode = Math.floor(100000 + Math.random() * 900000);
 
+  admin.resetPasswordCode = resetCode;
+  admin.resetPasswordCodeExpires = new Date(Date.now() + 900000);
+  await admin.markModified("resetPasswordCode");
+  await admin.markModified("resetPasswordCodeExpires");
+  await admin.save();
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: admin.email,
+    subject: "Password Reset Request",
+    text: `Your password reset code is: ${resetCode}`,
+  });
+
+  res.json({ success: true, message: "Password reset code sent" });
+});
+
+// Reset Password Function
+const resetPassword = asyncHandler(async (req, res) => {
+  const { resetCode, newPassword } = req.body;
+
+  const admin = await Admin.findOne({
+    resetPasswordCode: Number(resetCode),
+    resetPasswordCodeExpires: { $gt: new Date() },
+  });
+
+  if (!admin) {
+    return res.status(400).json({ success: false, message: "Invalid or expired reset code" });
+  }
+
+  admin.password = await bcrypt.hash(newPassword, 10);
+  admin.resetPasswordCode = undefined;
+  admin.resetPasswordCodeExpires = undefined;
+  await admin.save();
+
+  res.json({ success: true, message: "Password reset successful" });
+});
 
 module.exports = {
   loginAdmin,
@@ -147,4 +201,6 @@ module.exports = {
   createAdmin,
   updateAdmin,
   deleteAdmin,
+  forgotPassword,
+  resetPassword,
 };
