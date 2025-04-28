@@ -18,6 +18,7 @@
   app.use("/trip", require("./routes/tripRoutes"));
   app.use("/reservation", require("./routes/reservationRoutes"));
   app.use("/community", require("./routes/communityPostRoutes"));
+  app.use("/events", require("./routes/eventsRoutes"));
 
 
 

@@ -20,6 +20,7 @@ const uploadTripImage = multer({ storage: getStorage("trips") });
 const uploadProfileImage = multer({ storage: getStorage("users") });
 
 const uploadCommunityPostImage = multer({ storage: getStorage("communityPosts") });
+const uploadEventImage = multer({ storage: getStorage("events") });
 
 
-module.exports = { uploadTripImage, uploadProfileImage, uploadCommunityPostImage };  // Export both upload middlewares
+module.exports = { uploadTripImage, uploadProfileImage, uploadCommunityPostImage, uploadEventImage };  // Export both upload middlewares
