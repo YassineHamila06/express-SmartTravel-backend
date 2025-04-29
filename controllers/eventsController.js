@@ -6,10 +6,10 @@ const Event = require("../models/eventsModel");
 // @route   POST /api/v1/events
 // @access  Admin
 const createEvent = asyncHandler(async (req, res) => {
-  const { title, description, location, date, time } = req.body;
+  const { title, description, location, date, time, price } = req.body;
   const image = req.file?.path;
 
-  if (!title || !description || !location || !date || !time || !image) {
+  if (!title || !description || !location || !date || !time || !image || price === undefined || price === null) {
     return res.status(400).json({ success: false, message: "All fields are required" });
   }
 
@@ -20,7 +20,11 @@ const createEvent = asyncHandler(async (req, res) => {
     date,
     time,
     image,
-  });
+    price,
+  }); 
+  if (!event) {
+    return res.status(400).json({ success: false, message: "Failed to create event" });
+  }
 
   res.status(201).json({ success: true, data: event });
 });
@@ -53,7 +57,7 @@ const updateEvent = asyncHandler(async (req, res) => {
       return res.status(404).json({ success: false, message: "Event not found" });
     }
   
-    const allowedFields = ["title", "description", "location", "date", "time", "image", "isActive"];
+    const allowedFields = ["title", "description", "location", "date", "time", "image", "isActive", "price"];
     const updates = {};
   
     allowedFields.forEach(field => {
