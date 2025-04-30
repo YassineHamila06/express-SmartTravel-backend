@@ -86,6 +86,13 @@ const getComments = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, data: post.comments });
 });
+const deletePost = asyncHandler(async (req, res) => {
+  const post = await CommunityPost.findById(req.params.postId);
+  if (!post) {
+    res.status(404);
+    throw new Error("Post not found.");
+  }
+});
 
 module.exports = {
   createPost,
@@ -93,4 +100,5 @@ module.exports = {
   likePost,
   addComment,
   getComments,
+  deletePost,
 };

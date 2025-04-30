@@ -12,19 +12,25 @@ const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ success: false, message: "Please provide email and password" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Please provide email and password" });
   }
 
   // Check if admin exists
   const admin = await Admin.findOne({ email });
   if (!admin) {
-    return res.status(401).json({ success: false, message: "Invalid email or password" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid email or password" });
   }
 
   // Compare the password
   const isMatch = await bcrypt.compare(password, admin.password);
   if (!isMatch) {
-    return res.status(401).json({ success: false, message: "Invalid email or password" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid email or password" });
   }
 
   // Generate JWT token
@@ -34,7 +40,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
       name: admin.name,
       email: admin.email,
     },
-    process.env.JWT_SECRET,
+    process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "1h" }
   );
 
@@ -77,19 +83,25 @@ const createAdmin = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
   }
 
   // Check if email already exists
   const existingAdmin = await Admin.findOne({ email });
   if (existingAdmin) {
-    return res.status(400).json({ success: false, message: "Email already exists" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email already exists" });
   }
 
   // Handle profile image upload (optional)
   let profileImage;
   if (req.file && req.file.path) {
-    const result = await cloudinary.uploader.upload(req.file.path, { folder: "admins" });
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "admins",
+    });
     profileImage = result.secure_url; // Save the Cloudinary URL
   }
 
@@ -97,7 +109,12 @@ const createAdmin = asyncHandler(async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Create the admin
-  const admin = await Admin.create({ name, email, password: hashedPassword, profileImage });
+  const admin = await Admin.create({
+    name,
+    email,
+    password: hashedPassword,
+    profileImage,
+  });
 
   res.status(201).json({ success: true, data: admin });
 });
@@ -113,7 +130,9 @@ const updateAdmin = asyncHandler(async (req, res) => {
 
   // If a profile image is provided, upload it to Cloudinary
   if (req.file && req.file.path) {
-    const result = await cloudinary.uploader.upload(req.file.path, { folder: "admins" });
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "admins",
+    });
     req.body.profileImage = result.secure_url; // Store the Cloudinary URL for profile image
   }
 
@@ -123,7 +142,9 @@ const updateAdmin = asyncHandler(async (req, res) => {
   }
 
   // Update the admin's details
-  const updatedAdmin = await Admin.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const updatedAdmin = await Admin.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
   res.status(200).json({ success: true, data: updatedAdmin });
 });
 
@@ -137,7 +158,9 @@ const deleteAdmin = asyncHandler(async (req, res) => {
   }
 
   await Admin.findByIdAndDelete(req.params.id);
-  res.status(200).json({ success: true, message: "Admin deleted successfully" });
+  res
+    .status(200)
+    .json({ success: true, message: "Admin deleted successfully" });
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
