@@ -19,7 +19,7 @@
   app.use("/reservation", require("./routes/reservationRoutes"));
   app.use("/community", require("./routes/communityPostRoutes"));
   app.use("/events", require("./routes/eventsRoutes"));
-
+  app.use("/event-reservations", require("./routes/eventReservationRoutes"));
 
 
   app.use(errorHandler);

@@ -5,17 +5,12 @@ const reservationSchema = new mongoose.Schema(
         tripId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Trip",
-            required: false,
+            required: true,
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
-        },
-        eventId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Event",
-            required: false,
         },
         status: {
             type: String,

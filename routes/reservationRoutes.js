@@ -11,7 +11,6 @@ const {
   getReservationsByTrip,
   getReservationsByStatus,
   getReservationsByDateRange,
-  getReservationsByEvent,
 } = require("../controllers/reservationController");
 
 router.post("/add", createReservation);
@@ -24,8 +23,7 @@ router.put("/status/:id", updateReservationStatus);
 
 router.get("/user/:userId", getReservationsByUser);
 router.get("/trip/:tripId", getReservationsByTrip);
-router.get("/event/:eventId", getReservationsByEvent);
 router.get("/filter-status/:status", getReservationsByStatus); // ✅ renamed to avoid conflict
-router.get("/date-range", getReservationsByDateRange);
+
 
 module.exports = router;
