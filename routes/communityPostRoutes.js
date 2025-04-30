@@ -16,6 +16,6 @@ router.get('/get', getPosts);
 router.patch("/:postId/like", validateToken, likePost);
 router.post("/:postId/comment", validateToken, addComment);
 router.get("/:postId/comments", getComments);
-router.delete("/:postId", validateToken, deletePost);de
+router.delete("/:postId", validateToken, deletePost);
 
 module.exports = router;
