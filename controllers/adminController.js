@@ -139,17 +139,17 @@ const deleteAdmin = asyncHandler(async (req, res) => {
   await Admin.findByIdAndDelete(req.params.id);
   res.status(200).json({ success: true, message: "Admin deleted successfully" });
 });
-// Forgot Password Function
+
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const admin = await Admin.findOne({ email });
   if (!admin) {
     return res.status(400).json({ success: false, message: "Admin not found" });
   }
-  
-  const resetCode = Math.floor(100000 + Math.random() * 900000);
 
-  admin.resetPasswordCode = resetCode;
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  admin.resetPasswordCode = otp.toString();
   admin.resetPasswordCodeExpires = new Date(Date.now() + 900000);
   await admin.markModified("resetPasswordCode");
   await admin.markModified("resetPasswordCodeExpires");
@@ -167,23 +167,62 @@ const forgotPassword = asyncHandler(async (req, res) => {
     from: process.env.EMAIL_USER,
     to: admin.email,
     subject: "Password Reset Request",
-    text: `Your password reset code is: ${resetCode}`,
+    text: `Your password reset code is: ${otp}`,
   });
 
-  res.json({ success: true, message: "Password reset code sent" });
+  res.json({
+    success: true,
+    message: "Password reset code sent",
+    email: admin.email, // Send back the email for verification
+  });
 });
 
-// Reset Password Function
-const resetPassword = asyncHandler(async (req, res) => {
-  const { resetCode, newPassword } = req.body;
+// @desc    Verify OTP
+// @route   POST /api/v1/admins/verify-otp
+// @access  Public
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { otp } = req.body;
+
+  if (!otp) {
+    return res.status(400).json({
+      success: false,
+      message: "Reset code is required",
+    });
+  }
 
   const admin = await Admin.findOne({
-    resetPasswordCode: Number(resetCode),
+    resetPasswordCode: otp.toString(),
     resetPasswordCodeExpires: { $gt: new Date() },
   });
 
   if (!admin) {
-    return res.status(400).json({ success: false, message: "Invalid or expired reset code" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired reset code" });
+  }
+
+  res.json({
+    success: true,
+    message: "Reset code verified",
+    email: admin.email, // Send back the email for the next step
+  });
+});
+
+// @desc    Reset password
+// @route   POST /api/v1/admins/reset-password
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const { otp, newPassword } = req.body;
+
+  const admin = await Admin.findOne({
+    resetPasswordCode: otp.toString(),
+    resetPasswordCodeExpires: { $gt: new Date() },
+  });
+
+  if (!admin) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired reset code" });
   }
 
   admin.password = await bcrypt.hash(newPassword, 10);
@@ -192,6 +231,20 @@ const resetPassword = asyncHandler(async (req, res) => {
   await admin.save();
 
   res.json({ success: true, message: "Password reset successful" });
+});
+
+// Get logged-in admin data
+const getMe = asyncHandler(async (req, res) => {
+  if (!req.admin) {
+    return res.status(401).json({ message: "Admin not found" });
+  }
+
+  res.status(200).json({
+    id: req.admin.id,
+    name: req.admin.name,
+    email: req.admin.email,
+    profileImage: req.admin.profileImage || null, // Send the profile image URL if available
+  });
 });
 
 module.exports = {
@@ -203,4 +256,6 @@ module.exports = {
   deleteAdmin,
   forgotPassword,
   resetPassword,
+  verifyOtp,
+  getMe,
 };

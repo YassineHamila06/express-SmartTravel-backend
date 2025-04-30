@@ -10,7 +10,10 @@ const {
   deleteAdmin,
   forgotPassword,
   resetPassword,
+  verifyOtp,
+  getMe,
 } = require("../controllers/adminController");
+const validateToken = require("../controllers/middleware/validateTokenhandller-admin");
 
 
 router.post("/login", loginAdmin);
@@ -21,4 +24,6 @@ router.put("/update/:id", uploadProfileImage.single("profileImage"), updateAdmin
 router.delete("/delete/:id", deleteAdmin);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.get("/me", validateToken, getMe);
+router.post("/verify-otp", verifyOtp);
 module.exports = router;

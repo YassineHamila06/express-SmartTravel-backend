@@ -19,6 +19,9 @@ const adminSchema = new mongoose.Schema(
       type: String, // Store the image URL from Cloudinary
       required: false, // The profile image is optional
     },
+    resetPasswordCode: String, 
+    resetPasswordCodeExpires: Date, 
+
   },
   { timestamps: true }
 );
