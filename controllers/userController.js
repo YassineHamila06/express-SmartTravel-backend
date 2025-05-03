@@ -247,6 +247,27 @@ const getMe = asyncHandler(async (req, res) => {
     profileImage: req.user.profileImage || null, // Send the profile image URL if available
   });
 });
+// @desc    Get user's current points
+// @route   GET /api/users/:id/points
+// @access  Public (or protected)
+const getUserPoints = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    points: user.points,
+  });
+});
+
+module.exports = {
+  ... // existing exports
+  getUserPoints,
+};
 
 module.exports = {
   getusers,
@@ -258,4 +279,5 @@ module.exports = {
   resetPassword,
   loginUser,
   getMe,
+  getUserPoints,
 };

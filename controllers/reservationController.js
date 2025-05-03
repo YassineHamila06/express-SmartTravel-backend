@@ -14,19 +14,20 @@ const transporter = nodemailer.createTransport({
 });
 
 const createReservation = asyncHandler(async (req, res) => {
-  const {
-    tripId,
-    userId,
-    numberOfPeople,
-    totalPrice,
-    notes,
-    paymentMethod,
-  } = req.body;
+  const { tripId, userId, numberOfPeople, totalPrice, notes, paymentMethod } =
+    req.body;
 
   if (!tripId) {
     return res.status(400).json({
       success: false,
       message: "TripId is required",
+    });
+  }
+  const trip = await Trip.findById(tripId);
+  if (!trip) {
+    return res.status(404).json({
+      success: false,
+      message: "Trip not found",
     });
   }
 
@@ -42,6 +43,9 @@ const createReservation = asyncHandler(async (req, res) => {
     notes,
     paymentMethod,
   });
+  //zid point to user
+  user.points += 100;
+  await user.save();
 
   // Send confirmation email
   if (user.email) {
@@ -103,16 +107,9 @@ const deleteReservation = asyncHandler(async (req, res) => {
     .json({ success: true, message: "Reservation deleted successfully" });
 });
 
-
 const updateReservation = asyncHandler(async (req, res) => {
-  const {
-    tripId,
-    userId,
-    numberOfPeople,
-    totalPrice,
-    notes,
-    paymentMethod,
-  } = req.body;
+  const { tripId, userId, numberOfPeople, totalPrice, notes, paymentMethod } =
+    req.body;
 
   const reservation = await Reservation.findById(req.params.id);
   if (!reservation) {
@@ -142,7 +139,9 @@ const updateReservation = asyncHandler(async (req, res) => {
 // @access  Public
 
 const getReservation = asyncHandler(async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id).populate("tripId");
+  const reservation = await Reservation.findById(req.params.id).populate(
+    "tripId"
+  );
 
   if (!reservation) {
     return res
@@ -151,7 +150,7 @@ const getReservation = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json({ success: true, reservation });
-}); 
+});
 
 // @desc    Update reservation status
 // @route   PUT /api/v1/reservations/:id/status
@@ -182,7 +181,10 @@ const updateReservationStatus = asyncHandler(async (req, res) => {
 // @access  Public
 
 const getReservationsByUser = asyncHandler(async (req, res) => {
-  const reservations = await Reservation.find({ userId: req.params.userId }).populate("tripId");
+  const reservations = await Reservation.find({
+    userId: req.params.userId,
+  }).populate({ path: "tripId", model: "Trip" }); // <- force Trip model
+
   res.status(200).json({ success: true, reservations });
 });
 
@@ -195,7 +197,6 @@ const getReservationsByTrip = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, reservations });
 });
 
-
 // @desc    Get all reservations by status
 // @route   GET /api/v1/reservations/status/:status
 // @access  Public
@@ -204,8 +205,6 @@ const getReservationsByStatus = asyncHandler(async (req, res) => {
   const reservations = await Reservation.find({ status: req.params.status });
   res.status(200).json({ success: true, reservations });
 });
-
-
 
 module.exports = {
   createReservation,

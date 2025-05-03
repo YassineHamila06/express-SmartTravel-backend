@@ -46,6 +46,9 @@ const createEventReservation = asyncHandler(async (req, res) => {
     notes,
     paymentMethod,
   });
+  //zid point to user
+  user.points += 80;
+  await user.save();
 
   // Send confirmation email
   if (user.email) {

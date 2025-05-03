@@ -17,6 +17,13 @@ const createPost = asyncHandler(async (req, res) => {
     text,
     image,
   });
+  //zid point to user
+  const User = require("../models/userModel");
+  const user = await User.findById(userId);
+  if (user) {
+    user.points += 10; // 🎯 Adjust if needed
+    await user.save();
+  }
 
   res.status(201).json({ success: true, data: post });
 });

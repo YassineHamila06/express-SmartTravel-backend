@@ -10,6 +10,7 @@ const {
   resetPassword,
   loginUser,
   getMe,
+  getUserPoints,
 } = require("../controllers/userController");
 
 const validateToken = require("../controllers/middleware/validateTokenhandller");
@@ -30,5 +31,6 @@ router.delete("/delete/:id", deleteuser); // Deletes a user by id
 router.post("/login", loginUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.get("/get-points/:id", getUserPoints);
 
 module.exports = router;
