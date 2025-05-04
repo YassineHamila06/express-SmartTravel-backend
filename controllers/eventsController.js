@@ -89,19 +89,23 @@ const deleteEvent = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: "Event deleted successfully" });
 });
 
-// @desc    Activate event
-// @route   PATCH /api/v1/events/:id/activate
+// @desc    Toggle event status (activate/deactivate)
+// @route   PATCH /api/v1/events/:id/toggle-status
 // @access  Admin
-const activateEvent = asyncHandler(async (req, res) => {
+const toggleEventStatus = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
-
   if (!event) {
     return res.status(404).json({ success: false, message: "Event not found" });
   }
 
-  event.isActive = true;
+  event.isActive = !event.isActive;
   await event.save();
-  res.status(200).json({ success: true, message: "Event activated successfully" });
+
+  res.status(200).json({
+    success: true,
+    message: `Event ${event.isActive ? "activated" : "deactivated"}`,
+    data: event,
+  });
 });
 module.exports = {
   createEvent,
@@ -109,5 +113,5 @@ module.exports = {
   getEvent,
   updateEvent,
   deleteEvent,
-  activateEvent,
+  toggleEventStatus,
 };

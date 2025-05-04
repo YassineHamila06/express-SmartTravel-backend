@@ -114,28 +114,29 @@ const deleteTrip = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: "Trip deleted successfully" });
 });
 
-// @desc    Activate trip
-// @route   PATCH /api/v1/trips/:id/activate
+// @desc    Toggle trip status (activate/deactivate)
+// @route   PATCH /api/v1/trips/:id/toggle-status
 // @access  Admin
-const activateTrip = asyncHandler(async (req, res) => {
+const toggleTripStatus = asyncHandler(async (req, res) => {
   const trip = await Trip.findById(req.params.id);
   if (!trip) {
     return res.status(404).json({ success: false, message: "Trip not found" });
   }
 
-  trip.isActive = true;
+  trip.isActive = !trip.isActive;
   await trip.save();
 
-  res
-    .status(200)
-    .json({ success: true, message: "Trip activated", data: trip });
+  res.status(200).json({
+    success: true,
+    message: `Trip ${trip.isActive ? "activated" : "deactivated"}`,
+    data: trip,
+  });
 });
-
 module.exports = {
   createTrip,
   getTrips,
   getTrip,
   updateTrip,
   deleteTrip,
-  activateTrip,
+  toggleTripStatus,
 };

@@ -7,7 +7,7 @@ const {
   getEvent,
   updateEvent,
   deleteEvent,
-  activateEvent,
+  toggleEventStatus,
 } = require("../controllers/eventsController");
 
 router.post("/add", uploadEventImage.single("image"), createEvent);
@@ -15,6 +15,6 @@ router.get("/get", getEvents);
 router.get("/get/:id", getEvent);
 router.put("/update/:id", uploadEventImage.single("image"), updateEvent);
 router.delete("/delete/:id", deleteEvent);
-router.route("/:id/activate").patch(activateEvent);
+router.route("/:id/activate").patch(toggleEventStatus);
 
 module.exports = router;

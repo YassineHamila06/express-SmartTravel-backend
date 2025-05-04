@@ -21,6 +21,9 @@
   app.use("/events", require("./routes/eventsRoutes"));
   app.use("/event-reservations", require("./routes/eventReservationRoutes"));
   app.use("/reward", require("./routes/rewardRoutes"));
+  app.use("/survey", require("./routes/surveyRoutes"));
+  app.use("/question", require("./routes/questionRoutes"));
+  app.use("/response", require("./routes/responseRoutes"));
 
 
   app.use(errorHandler);

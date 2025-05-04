@@ -7,7 +7,7 @@ const {
   getTrip,
   updateTrip,
   deleteTrip,
-  activateTrip,
+  toggleTripStatus,
 } = require("../controllers/tripController");
 
 // Use Multer only for create and update (optional image upload)
@@ -20,6 +20,6 @@ router.get("/get/:id", getTrip);
 router.delete("/delete/:id", deleteTrip);
 
 // Route for activating a trip (no image upload here)
-router.route("/:id/activate").patch(activateTrip); // Admin: Activate trip
+router.route("/:id/activate").patch(toggleTripStatus); // Admin: Activate trip
 
 module.exports = router;
