@@ -25,10 +25,12 @@ const surveySchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true,
+    required: false,  
   },
   numberOfRespondents: {
     type: Number,
     default: 0,
+    required: false,
   },
-});
+}, { timestamps: true });
 module.exports = mongoose.model("Survey", surveySchema);

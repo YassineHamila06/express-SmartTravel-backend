@@ -56,16 +56,27 @@ const createQuestion = asyncHandler(async (req, res) => {
 
 // Get all questions for a survey
 const getQuestions = asyncHandler(async (req, res) => {
-  const { surveyId } = req.params;
+  const { surveyId } = req.query;
 
   if (!surveyId) {
-    res.status(400);
-    throw new Error("Please provide a survey ID");
+    return res.status(400).json({
+      title: "Validation Failed",
+      message: "Please provide a survey ID",
+    });
   }
 
   const questions = await Question.find({ surveyId }).sort({ order: 1 });
+
+  if (!questions || questions.length === 0) {
+    return res.status(404).json({
+      title: "Not Found",
+      message: "No questions found for this survey",
+    });
+  }
+
   res.status(200).json(questions);
 });
+
 
 // Get a single question by ID
 const getQuestionById = asyncHandler(async (req, res) => {
