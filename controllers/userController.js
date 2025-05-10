@@ -140,10 +140,15 @@ const updateuser = asyncHandler(async (req, res) => {
 
   if (req.body.travelPreferences) {
     if (!Array.isArray(req.body.travelPreferences)) {
-      return res.status(400).json({ success: false, message: "travelPreferences must be an array" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "travelPreferences must be an array",
+        });
     }
 
-    const isValid = req.body.travelPreferences.every(pref =>
+    const isValid = req.body.travelPreferences.every((pref) =>
       allowedPreferences.includes(pref)
     );
 
@@ -162,7 +167,6 @@ const updateuser = asyncHandler(async (req, res) => {
 
   res.status(200).json(updatedUser);
 });
-
 
 // @desc: Delete user
 // @route: DELETE /api/v1/users/:id
@@ -190,6 +194,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.resetPasswordCodeExpires = new Date(Date.now() + 900000);
   await user.markModified("resetPasswordCode");
   await user.markModified("resetPasswordCodeExpires");
+
   await user.save();
 
   const transporter = nodemailer.createTransport({
@@ -212,7 +217,32 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 // Reset Password Function
 const resetPassword = asyncHandler(async (req, res) => {
-  const { resetCode, newPassword } = req.body;
+  const { userId, newPassword } = req.body;
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+  
+  // Optional: Clear resetCode so it can't be reused
+  user.resetPasswordCode = undefined;
+  user.resetPasswordCodeExpires = undefined;
+  
+  await user.save();
+  
+  res.json({ success: true, message: "Password reset successful" });
+  
+});
+
+// @desc: Verify reset code
+// @route: POST /api/v1/users/verify-reset-code
+// @desc: Verify reset code
+const verifyResetCode = asyncHandler(async (req, res) => {
+  const { resetCode } = req.body;
 
   const user = await User.findOne({
     resetPasswordCode: Number(resetCode),
@@ -225,12 +255,11 @@ const resetPassword = asyncHandler(async (req, res) => {
       .json({ success: false, message: "Invalid or expired reset code" });
   }
 
-  user.password = await bcrypt.hash(newPassword, 10);
-  user.resetPasswordCode = undefined;
-  user.resetPasswordCodeExpires = undefined;
-  await user.save();
-
-  res.json({ success: true, message: "Password reset successful" });
+  res.json({
+    success: true,
+    message: "Reset code is valid",
+    userId: user._id, // ✅ Add this line
+  });
 });
 
 // Get logged-in user data
@@ -265,7 +294,7 @@ const getUserPoints = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  ... // existing exports
+  ...// existing exports
   getUserPoints,
 };
 
@@ -280,4 +309,5 @@ module.exports = {
   loginUser,
   getMe,
   getUserPoints,
+  verifyResetCode,
 };

@@ -11,6 +11,7 @@ const {
   loginUser,
   getMe,
   getUserPoints,
+  verifyResetCode
 } = require("../controllers/userController");
 
 const validateToken = require("../controllers/middleware/validateTokenhandller");
@@ -32,5 +33,6 @@ router.post("/login", loginUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.get("/get-points/:id", getUserPoints);
+router.post("/verify-reset-code", verifyResetCode);
 
 module.exports = router;
