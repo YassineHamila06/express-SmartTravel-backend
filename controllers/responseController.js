@@ -1,5 +1,6 @@
 const Response = require("../models/responseModel");
 const mongoose = require("mongoose");
+const User = require("../models/userModel");
 
 // Create a new response
 const createResponse = async (req, res) => {
@@ -40,6 +41,11 @@ const createResponse = async (req, res) => {
       userId,
       value,
     });
+    const user = await User.findById(userId);
+  if (user) {
+    user.points = (user.points || 0) + 20;  
+    await user.save();
+  }
 
     res.status(201).json({
       status: "success",
@@ -54,6 +60,7 @@ const createResponse = async (req, res) => {
     });
   }
 };
+
 
 // Get all responses
 const getResponses = async (req, res) => {

@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const CommunityPost = require("../models/communityPostModel");
+const User = require("../models/userModel");
 
 // Create a post
 const createPost = asyncHandler(async (req, res) => {
@@ -18,7 +19,7 @@ const createPost = asyncHandler(async (req, res) => {
     image,
   });
   //zid point to user
-  const User = require("../models/userModel");
+
   const user = await User.findById(userId);
   if (user) {
     user.points += 10; // 🎯 Adjust if needed
