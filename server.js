@@ -5,6 +5,7 @@
   const dotenv = require("dotenv").config();
 
 
+
   connectDB();
 
   const app = express();
@@ -24,6 +25,7 @@
   app.use("/survey", require("./routes/surveyRoutes"));
   app.use("/question", require("./routes/questionRoutes"));
   app.use("/response", require("./routes/responseRoutes"));
+  app.use("/dashboard", require("./routes/dashboardRoutes"));
 
 
   app.use(errorHandler);
