@@ -1,6 +1,8 @@
 // controllers/eventsController.js
 const asyncHandler = require("express-async-handler");
 const Event = require("../models/eventsModel");
+const EventReservation = require("../models/eventReservationModel");
+
 
 // @desc    Create new event
 // @route   POST /api/v1/events
@@ -83,6 +85,15 @@ const deleteEvent = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
   if (!event) {
     return res.status(404).json({ success: false, message: "Event not found" });
+  }
+
+  // Check if any reservations exist for this event
+  const existingReservations = await EventReservation.find({ eventId: event._id });
+  if (existingReservations.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Cannot delete event with existing reservations",
+    });
   }
 
   await Event.findByIdAndDelete(req.params.id);

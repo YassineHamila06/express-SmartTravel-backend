@@ -19,12 +19,12 @@ const questionSchema = new mongoose.Schema({
     enum: [
       "short-text",
       "long-text",
-      "multiple-choice",
-      "checkbox",
-      "dropdown",
-      "linear-scale",
-      "date",
-      "time",
+      "multiple-choice", //fix this
+      "checkbox", //fix this
+      "dropdown", //remove this
+      "linear-scale", //remove this
+      "date", //fix this
+      "time", //fix this
     ],
     required: true,
   },

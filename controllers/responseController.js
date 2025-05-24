@@ -1,6 +1,7 @@
 const Response = require("../models/responseModel");
 const mongoose = require("mongoose");
 const User = require("../models/userModel");
+const Question = require("../models/questionModel");
 
 // Create a new response
 const createResponse = async (req, res) => {
@@ -241,6 +242,43 @@ const deleteResponse = async (req, res) => {
     });
   }
 };
+const getResponsesBySurvey = async (req, res) => {
+  try {
+    const { surveyId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(surveyId)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid surveyId format",
+      });
+    }
+
+    // Get all questions for this survey
+    const questions = await Question.find({ surveyId });
+
+    const questionIds = questions.map((q) => q._id);
+
+    // Find all responses for those questions
+    const responses = await Response.find({
+      questionId: { $in: questionIds },
+    })
+      .populate("userId", "name email")
+      .populate("questionId", "text");
+
+    res.status(200).json({
+      status: "success",
+      results: responses.length,
+      data: {
+        responses,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   createResponse,
@@ -250,4 +288,5 @@ module.exports = {
   getResponsesByUser,
   updateResponse,
   deleteResponse,
+  getResponsesBySurvey,
 };

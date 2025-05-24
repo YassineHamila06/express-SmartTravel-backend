@@ -1,6 +1,8 @@
 // controllers/tripController.js
 const asyncHandler = require("express-async-handler");
 const Trip = require("../models/tripModel");
+const Reservation = require("../models/reservationModel");
+
 
 // @desc    Create new trip
 // @route   POST /api/v1/trips
@@ -110,9 +112,20 @@ const deleteTrip = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Trip not found" });
   }
 
+  // 🔍 Check for existing reservations
+  const existingReservations = await Reservation.find({ tripId: trip._id });
+  if (existingReservations.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Cannot delete trip with existing reservations",
+    });
+  }
+
+  // ✅ No reservations → proceed with deletion
   await Trip.findByIdAndDelete(req.params.id);
   res.status(200).json({ success: true, message: "Trip deleted successfully" });
 });
+
 
 // @desc    Toggle trip status (activate/deactivate)
 // @route   PATCH /api/v1/trips/:id/toggle-status
