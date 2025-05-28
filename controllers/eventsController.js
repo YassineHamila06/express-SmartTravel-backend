@@ -35,7 +35,7 @@ const createEvent = asyncHandler(async (req, res) => {
 // @route   GET /api/v1/events
 // @access  Public
 const getEvents = asyncHandler(async (req, res) => {
-  const events = await Event.find();
+  const events = await Event.find({ isActive: true });
   res.status(200).json({ success: true, data: events });
 });
 

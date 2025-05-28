@@ -85,7 +85,9 @@ const createReservation = asyncHandler(async (req, res) => {
 // @access: Public
 
 const getReservations = asyncHandler(async (req, res) => {
-  const reservations = await Reservation.find().populate("tripId");
+  const reservations = await Reservation.find()
+    .populate("tripId")
+    .populate("userId");
   res.status(200).json({ success: true, reservations });
 });
 
@@ -139,9 +141,9 @@ const updateReservation = asyncHandler(async (req, res) => {
 // @access  Public
 
 const getReservation = asyncHandler(async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id).populate(
-    "tripId"
-  );
+  const reservation = await Reservation.findById(req.params.id)
+    .populate("tripId")
+    .populate("userId");
 
   if (!reservation) {
     return res
@@ -183,7 +185,9 @@ const updateReservationStatus = asyncHandler(async (req, res) => {
 const getReservationsByUser = asyncHandler(async (req, res) => {
   const reservations = await Reservation.find({
     userId: req.params.userId,
-  }).populate({ path: "tripId", model: "Trip" }); // <- force Trip model
+  })
+    .populate("tripId")
+    .populate("userId");
 
   res.status(200).json({ success: true, reservations });
 });

@@ -23,8 +23,8 @@ const userSchema = new mongoose.Schema(
       type: String, // Store the image URL or path
       required: false, // The profile image is optional
     },
-    resetPasswordCode: String, 
-    resetPasswordCodeExpires: Date, 
+    resetPasswordCode: String,
+    resetPasswordCodeExpires: Date,
     travelPreferences: {
       type: [String],
       enum: [
@@ -44,7 +44,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    
+    isActive: {
+      type: Boolean,
+      required: [true, "Please provide a status"],
+    },
   },
   { timestamps: true }
 );

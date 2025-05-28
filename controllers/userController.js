@@ -140,12 +140,10 @@ const updateuser = asyncHandler(async (req, res) => {
 
   if (req.body.travelPreferences) {
     if (!Array.isArray(req.body.travelPreferences)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "travelPreferences must be an array",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "travelPreferences must be an array",
+      });
     }
 
     const isValid = req.body.travelPreferences.every((pref) =>
@@ -224,18 +222,17 @@ const resetPassword = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
-  
+
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   user.password = hashedPassword;
-  
+
   // Optional: Clear resetCode so it can't be reused
   user.resetPasswordCode = undefined;
   user.resetPasswordCodeExpires = undefined;
-  
+
   await user.save();
-  
+
   res.json({ success: true, message: "Password reset successful" });
-  
 });
 
 // @desc: Verify reset code
@@ -293,6 +290,27 @@ const getUserPoints = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc: Toggle user isActive status
+// @route: PATCH /api/v1/users/:id/toggle-active
+// @access: Private/Admin
+const toggleUserStatus = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  // Toggle the isActive boolean
+  user.isActive = !user.isActive;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: `User is now ${user.isActive ? "active" : "inactive"}`,
+    isActive: user.isActive,
+  });
+});
+
 module.exports = {
   ...// existing exports
   getUserPoints,
@@ -310,4 +328,5 @@ module.exports = {
   getMe,
   getUserPoints,
   verifyResetCode,
+  toggleUserStatus,
 };

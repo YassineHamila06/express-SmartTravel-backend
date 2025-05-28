@@ -3,7 +3,6 @@ const asyncHandler = require("express-async-handler");
 const Trip = require("../models/tripModel");
 const Reservation = require("../models/reservationModel");
 
-
 // @desc    Create new trip
 // @route   POST /api/v1/trips
 // @access  Admin
@@ -16,6 +15,7 @@ const createTrip = asyncHandler(async (req, res) => {
     endDate,
     tripType,
     reduction,
+    isActive,
   } = req.body;
   const image = req.file?.path;
 
@@ -26,7 +26,8 @@ const createTrip = asyncHandler(async (req, res) => {
     !description ||
     !debutDate ||
     !endDate ||
-    !image
+    !image ||
+    !isActive
   ) {
     return res
       .status(400)
@@ -48,6 +49,7 @@ const createTrip = asyncHandler(async (req, res) => {
     image,
     tripType,
     reduction,
+    isActive,
   });
 
   res.status(201).json({ success: true, data: trip });
@@ -125,7 +127,6 @@ const deleteTrip = asyncHandler(async (req, res) => {
   await Trip.findByIdAndDelete(req.params.id);
   res.status(200).json({ success: true, message: "Trip deleted successfully" });
 });
-
 
 // @desc    Toggle trip status (activate/deactivate)
 // @route   PATCH /api/v1/trips/:id/toggle-status

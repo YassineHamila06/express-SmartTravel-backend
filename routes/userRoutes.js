@@ -11,7 +11,8 @@ const {
   loginUser,
   getMe,
   getUserPoints,
-  verifyResetCode
+  verifyResetCode,
+  toggleUserStatus,
 } = require("../controllers/userController");
 
 const validateToken = require("../controllers/middleware/validateTokenhandller");
@@ -34,5 +35,6 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.get("/get-points/:id", getUserPoints);
 router.post("/verify-reset-code", verifyResetCode);
+router.patch("/:id/deactivate-user", toggleUserStatus); // Toggle user isActive status
 
 module.exports = router;
