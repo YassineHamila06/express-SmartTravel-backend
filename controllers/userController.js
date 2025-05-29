@@ -31,6 +31,13 @@ const loginUser = asyncHandler(async (req, res) => {
       .json({ success: false, message: "Invalid email or password" });
   }
 
+  if (!user.isActive) {
+    return res.status(403).json({
+      success: false,
+      message: "Wait for admin activation",
+    });
+  }
+
   const token = jwt.sign(
     {
       id: user._id,
@@ -51,10 +58,11 @@ const loginUser = asyncHandler(async (req, res) => {
       name: user.name,
       lastname: user.lastname,
       email: user.email,
-      profileImage: user.profileImage || null, // Optional image URL
+      profileImage: user.profileImage || null,
     },
   });
 });
+
 
 // @desc: Get all users
 // @route: GET /api/v1/users
@@ -68,31 +76,69 @@ const getusers = asyncHandler(async (req, res) => {
 // @route: POST /api/v1/users
 // @access: Public
 const createuser = asyncHandler(async (req, res) => {
-  const { name, lastname, email, password } = req.body;
+  const {
+    name,
+    lastname,
+    email,
+    password,
+    profileImage = null,
+    travelPreferences = [],
+    isActive = false,
+  } = req.body;
+
   if (!name || !lastname || !email || !password) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Please provide all required fields" });
+    return res.status(400).json({
+      success: false,
+      message: "Please provide all required fields",
+    });
   }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Email already exists" });
+    return res.status(400).json({
+      success: false,
+      message: "Email already exists",
+    });
+  }
+
+  const allowedPreferences = [
+    "Beach destinations",
+    "Cultural tours",
+    "Adventure travel",
+    "Nature escapes",
+    "City breaks",
+    "Luxury travel",
+    "Budget travel",
+    "Wellness retreats",
+    "Family vacations",
+  ];
+
+  const isValid =
+    Array.isArray(travelPreferences) &&
+    travelPreferences.every((pref) => allowedPreferences.includes(pref));
+
+  if (!isValid) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid travelPreferences",
+    });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
+
   const user = await User.create({
     name,
     lastname,
     email,
     password: hashedPassword,
-    profileImage: null,
+    profileImage,
+    travelPreferences,
+    isActive,
   });
 
   res.status(201).json(user);
 });
+
 
 // @desc: Get user by ID
 // @route: GET /api/v1/users/:id
