@@ -12,6 +12,7 @@ const {
   resetPassword,
   verifyOtp,
   getMe,
+  changePassword,
 } = require("../controllers/adminController");
 const validateToken = require("../controllers/middleware/validateTokenhandller-admin");
 
@@ -26,4 +27,6 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.get("/me", validateToken, getMe);
 router.post("/verify-otp", verifyOtp);
+router.put("/change-password", changePassword);
+
 module.exports = router;

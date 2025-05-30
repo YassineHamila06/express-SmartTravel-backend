@@ -83,7 +83,7 @@ const createuser = asyncHandler(async (req, res) => {
     password,
     profileImage = null,
     travelPreferences = [],
-    isActive = false,
+    isActive = true,
   } = req.body;
 
   if (!name || !lastname || !email || !password) {

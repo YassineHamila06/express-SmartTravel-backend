@@ -270,6 +270,45 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Change admin password
+// @route   PUT /api/v1/admins/change-password
+// @access  Admin (must be authenticated)
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Old and new passwords are required",
+    });
+  }
+
+  // Admin ID is the same as we have only one Admin
+  const adminId = req.admin ? req.admin.id : "680ad6f8534dcd711ac49357";
+  const admin = await Admin.findById(adminId);
+  if (!admin) {
+    return res.status(404).json({ success: false, message: "Admin not found" });
+  }
+
+  // Check if old password matches
+  const isMatch = await bcrypt.compare(oldPassword, admin.password);
+  if (!isMatch) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Incorrect current password" });
+  }
+
+  // Hash the new password and update
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  admin.password = hashedPassword;
+  await admin.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password updated successfully",
+  });
+});
+
 module.exports = {
   loginAdmin,
   getAdmins,
@@ -281,4 +320,5 @@ module.exports = {
   resetPassword,
   verifyOtp,
   getMe,
+  changePassword,
 };
