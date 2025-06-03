@@ -3,6 +3,7 @@ const Trip = require("../models/tripModel");
 const User = require("../models/userModel");
 const nodemailer = require("nodemailer");
 const asyncHandler = require("express-async-handler");
+const ClaimedReward = require("../models/ClaimedRewardModel");
 
 // Email transporter
 const transporter = nodemailer.createTransport({
@@ -14,8 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const createReservation = asyncHandler(async (req, res) => {
-  const { tripId, userId, numberOfPeople, totalPrice, notes, paymentMethod } =
-    req.body;
+  const { tripId, userId, numberOfPeople, notes, paymentMethod } = req.body;
 
   if (!tripId) {
     return res.status(400).json({
@@ -35,6 +35,23 @@ const createReservation = asyncHandler(async (req, res) => {
   if (!user)
     return res.status(404).json({ success: false, message: "User not found" });
 
+  // Check for active discount reward
+  const claimedDiscount = await ClaimedReward.findOne({
+    userId: user._id,
+    status: "active",
+  }).populate("rewardId");
+
+  let discountAmount = 0;
+  if (claimedDiscount && claimedDiscount.rewardId.category === "discount") {
+    discountAmount = claimedDiscount.rewardId.discountValue || 0; // % or flat
+  }
+
+  // Calculate total price
+  let totalPrice = trip.price * numberOfPeople;
+  if (discountAmount) {
+    totalPrice -= (discountAmount / 100) * totalPrice;
+  }
+
   const reservation = await Reservation.create({
     tripId,
     userId,
@@ -52,7 +69,7 @@ const createReservation = asyncHandler(async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: "Trip Reservation Confirmed ✔️",
+      subject: "Trip Reservation Confirmed ✔",
       text: `Hello ${user.firstname || user.name},
 
   Your reservation for the trip to ${trip.destination} has been confirmed!
@@ -166,6 +183,10 @@ const updateReservationStatus = asyncHandler(async (req, res) => {
     return res
       .status(404)
       .json({ success: false, message: "Reservation not found" });
+  }
+  if (reservation.status === "cancelled") {
+    res.status(400);
+    throw new Error("Cannot update a cancelled reservation");
   }
 
   reservation.status = status;

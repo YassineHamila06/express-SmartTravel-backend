@@ -49,7 +49,7 @@ const createEventReservation = asyncHandler(async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: "Event Reservation Confirmed ✔️",
+      subject: "Event Reservation Confirmed ✔",
       text: `Hello ${user.firstname || user.name},
 
   Your reservation for the event "${event.title}" has been confirmed!
@@ -95,7 +95,7 @@ const getEventReservation = asyncHandler(async (req, res) => {
       .status(404)
       .json({ success: false, message: "Reservation not found" });
   }
-  res.status(200).json({ success: true, reservation });
+  res.status(200).json({ success: true, data: reservation });
 });
 
 const updateEventReservation = asyncHandler(async (req, res) => {
@@ -121,7 +121,7 @@ const updateEventReservation = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Reservation updated successfully",
-    reservation,
+    data: reservation,
   });
 });
 
@@ -146,7 +146,7 @@ const getEventReservationsByUser = asyncHandler(async (req, res) => {
     .populate("eventId")
     .populate("userId");
 
-  res.status(200).json({ success: true, reservations });
+  res.status(200).json({ success: true, data: reservations });
 });
 
 const getEventReservationsByEvent = asyncHandler(async (req, res) => {
@@ -155,7 +155,7 @@ const getEventReservationsByEvent = asyncHandler(async (req, res) => {
   })
     .populate("eventId")
     .populate("userId");
-  res.status(200).json({ success: true, reservations });
+  res.status(200).json({ success: true, data: reservations });
 });
 
 const updateEventReservationStatus = asyncHandler(async (req, res) => {
@@ -167,6 +167,10 @@ const updateEventReservationStatus = asyncHandler(async (req, res) => {
       .status(404)
       .json({ success: false, message: "Reservation not found" });
   }
+  if (reservation.status === "cancelled") {
+    res.status(400);
+    throw new Error("Cannot update a cancelled reservation");
+  }
 
   reservation.status = status;
   await reservation.save();
@@ -174,7 +178,7 @@ const updateEventReservationStatus = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Reservation status updated successfully",
-    reservation,
+    data: reservation,
   });
 });
 const getEventReservationsByStatus = asyncHandler(async (req, res) => {
@@ -184,7 +188,7 @@ const getEventReservationsByStatus = asyncHandler(async (req, res) => {
     .populate("eventId")
     .populate("userId");
 
-  res.status(200).json({ success: true, reservations });
+  res.status(200).json({ success: true, data: reservations });
 });
 
 module.exports = {

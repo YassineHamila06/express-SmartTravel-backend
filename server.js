@@ -26,6 +26,7 @@
   app.use("/question", require("./routes/questionRoutes"));
   app.use("/response", require("./routes/responseRoutes"));
   app.use("/dashboard", require("./routes/dashboardRoutes"));
+  app.use("/claimed-reward", require("./routes/claimedRewardRoutes"));
 
 
   app.use(errorHandler);

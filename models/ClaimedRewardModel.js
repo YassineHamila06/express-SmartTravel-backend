@@ -14,8 +14,16 @@ const claimedRewardSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["claimed", "used"],
+      enum: ["claimed", "used", "expired"],
       default: "claimed",
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    expirationDate: {
+      type: Date,
+      required: true,
     },
   },
   { timestamps: true }
@@ -23,4 +31,4 @@ const claimedRewardSchema = new mongoose.Schema(
 
 const ClaimedReward = mongoose.model("ClaimedReward", claimedRewardSchema);
 
-module.exports = ClaimedReward;
+module.exports = ClaimedReward;

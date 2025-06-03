@@ -21,8 +21,6 @@ const questionSchema = new mongoose.Schema({
       "long-text",
       "multiple-choice", //fix this
       "checkbox", //fix this
-      "dropdown", //remove this
-      "linear-scale", //remove this
       "date", //fix this
       "time", //fix this
     ],

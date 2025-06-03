@@ -63,7 +63,6 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
-
 // @desc: Get all users
 // @route: GET /api/v1/users
 // @access: Public
@@ -138,7 +137,6 @@ const createuser = asyncHandler(async (req, res) => {
 
   res.status(201).json(user);
 });
-
 
 // @desc: Get user by ID
 // @route: GET /api/v1/users/:id
